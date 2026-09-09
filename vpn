@@ -588,7 +588,7 @@ print(f\"{p['host']}|{p['port']}|{p['name']}\")
   step "Authenticating"
   local SAML_PID=""
   cd "$RUNTIME_DIR"
-  "${SAML_SERVER[@]}" &
+  "${SAML_SERVER[@]}" > /dev/null 2>&1 &
   SAML_PID=$!
   sleep 0.5
 
@@ -644,7 +644,7 @@ print(f\"{p['host']}|{p['port']}|{p['name']}\")
   if [[ "$OS" == "Darwin" ]]; then
     open "$URL"
   else
-    xdg-open "$URL" 2>/dev/null || {
+    xdg-open "$URL" > /dev/null 2>&1 || {
       warn "Could not open browser automatically"
       info "Open this URL manually: ${CYAN}${URL}${RESET}"
     }
