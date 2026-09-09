@@ -124,6 +124,7 @@ usage() {
   echo -e "  ${CYAN}list${RESET}                List available profiles"
   echo -e "  ${CYAN}import${RESET}              Import profiles from AWS VPN Client"
   echo -e "  ${CYAN}logs${RESET} ${DIM}[profile]${RESET}      Tail the connection log"
+  echo -e "  ${CYAN}prompt${RESET}              VPN status for shell prompt integration"
   echo -e "  ${CYAN}setup-sudo${RESET}          Skip password prompts"
   exit "${1:-0}"
 }
@@ -327,6 +328,23 @@ cmd_select() {
     cmd_disconnect "$slug"
   else
     cmd_connect "$slug"
+  fi
+}
+
+cmd_prompt() {
+  # Prompt helper — uses _active_profiles to detect connections reliably
+  # (PID files are root-owned so kill -0 won't work as regular user)
+  local slugs
+  slugs=$(_active_profiles)
+  if [[ -n "$slugs" ]]; then
+    local active total
+    active=$(echo "$slugs" | wc -l)
+    total=$(set -- "$CONFIG_DIR"/configs/*.conf; echo $#)
+    if (( active >= total && total > 0 )); then
+      echo "🔒all"
+    else
+      echo "🔒$(echo "$slugs" | paste -sd',')"
+    fi
   fi
 }
 
@@ -814,6 +832,7 @@ case "${1:-}" in
   setup-sudo)        cmd_setup_sudo ;;
   logs)              cmd_logs "${2:-}" ;;
   all)               cmd_connect_all ;;
+  prompt)            cmd_prompt ;;
   -v|--version)      echo "aws-vpn-cli $VERSION" ;;
   -h|--help)         usage 0 ;;
   "")                cmd_select ;;
